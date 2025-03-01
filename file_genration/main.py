@@ -18,7 +18,7 @@ def main():
             generation_config=generation_config,
         )
 
-        user_input_path = "generate_code/user_input/*"
+        user_input_path = work_dir + "generate_code/user_input/*"
 
         backend_path = work_dir+"/backend"
 
