@@ -12,6 +12,8 @@ You are provided with a **React frontend template** (`App.jsx`) that will interf
      - In a regression model, one input might be `input1` (datatype).
      - In a classification model, inputs could be any number of features (e.g., `feature1`, `feature2`).
    - In the prediction logic (in the `handleSubmit` function), **convert the input values** to their relevant data types (string, int, or float) before sending them to the backend API for prediction.
+   - Categorical Inputs:
+If the input involves categorical values, provide a dropdown in the form for users to select the correct category. The unique values for a categorical field should be populated in the dropdown from a given list of possible values based on given JSON code blocks.
 
 3. **Production-Ready Code:**
    - **Error Handling**:  

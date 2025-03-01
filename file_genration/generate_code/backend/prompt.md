@@ -8,6 +8,8 @@ We need to create a production-ready FastAPI service for a machine learning (ML)
    An endpoint `/predict` that accepts a JSON payload with an "inputs" object.  
    Each value in the "inputs" dictionary should accept strings, floats, or integers, as specified in the attached JSON code block.  
    - The prediction logic should convert the inputs into appropriate data types before invoking the model.
+   - Categorical Inputs:
+If the input involves categorical values, the string value will be provided and the model should handle the encoding internally based on encoding logic provided in the JSON code block.
    - The prediction response should include the output, which could be a result of processing, transformed data, or model inference.  
 
 3. **Metrics Endpoint:**  

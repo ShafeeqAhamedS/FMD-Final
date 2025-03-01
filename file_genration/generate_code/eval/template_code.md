@@ -114,6 +114,18 @@ def main():
     # Load dataset (Replace 'dataset.csv' with actual dataset file if required)
     df = load_dataset("./dataset.csv") # Always load dataset from the same directory as the script ./
 
+    print("Dataset Preview:", df.head())
+
+    # If dataset contains categorical columns, print unique values of each categorical column
+
+    categorical_columns = df.select_dtypes(include=['object', 'category']).columns
+
+    # Print unique values for each categorical column
+    for col in categorical_columns:
+        print(f"Unique values in column '{col}':")
+        print(df[col].unique())
+        print('-' * 50)
+
     # Detect numerical and categorical columns for preprocessing based on given code blocks
     # Preprocess data
     df = preprocess_data(df)

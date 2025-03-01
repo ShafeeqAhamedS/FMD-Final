@@ -5,33 +5,6 @@
     - vars.yml
 
   tasks:
-    - name: Install necessary packages
-      apt:
-        name:
-          - python3-pip
-          - python3-dev
-          - python3-venv
-          - nginx
-          - nodejs
-          - npm
-        state: present
-        update_cache: yes
-      become: yes  # sudo for package installation
-
-    - name: Clone the Git repository
-      git:
-        repo: "{{ app_git_repo }}"
-        dest: "{{ app_directory }}"
-        version: main
-
-    - name: Set up Python virtual environment
-      command: python3 -m venv {{ app_directory }}/venv
-
-    - name: Install Python dependencies
-      pip:
-        requirements: "{{ app_directory }}/requirements.txt"
-        virtualenv: "{{ app_directory }}/venv"
-
     - name: Copy genrated backend file from local to EC2
       copy:
         src: "/var/lib/jenkins/workspace/FMD/workspace/file_genration/backend/main.py"
@@ -44,27 +17,11 @@
         dest: "{{ backend_directory }}"
         mode: '0755'
 
-    - name: Create FastAPI service file
-      template:
-        src: "templates/fastapi.service.j2"
-        dest: "/etc/systemd/system/{{ fastapi_service_name }}.service"
-        mode: '0755'
-      become: yes  # sudo to write to /etc/systemd/system
-
-    - name: Enable and start the FastAPI service
+    - name: Restart FastAPI service
       systemd:
-        name: "{{ fastapi_service_name }}"
-        state: started
-        enabled: yes
-      become: yes  # sudo to start and enable the service
-
-    - name: Check NPM version
-      command: npm --version
-      register: npm_version
-
-    - name: Display npm version
-      debug:
-        var: npm_version.stdout
+        name: fastapi
+        state: restarted
+      become: yes 
 
     - name: Install packages at {{ frontend_directory }}
       shell: cd {{ frontend_directory }} && npm install

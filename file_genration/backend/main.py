@@ -11,14 +11,15 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, Extra
 import uvicorn
-import numpy as np
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
 
 # Setup logger
 logger = logging.getLogger("uvicorn.error")
 logging.basicConfig(level=logging.INFO)
 
 app = FastAPI(
-    title="Student Score Prediction API",  # Change to appropriate Title based on JSON block
+    title="Salary Prediction API",  # Change to appropriate Title based on JSON block
     description="FastAPI service for serving predictions and evaluation metrics for the ML model.",
     version="1.0.0"
 )
@@ -51,7 +52,9 @@ class PredictionRequest(BaseModel):
 
 # Global model reference (loaded during startup)
 model = None
-model_metrics = {}
+label_encoder = None
+mse = None
+r2 = None
 
 # -------------------------
 # Utility: Model Prediction
@@ -59,19 +62,39 @@ model_metrics = {}
 def model_predict(model, inputs: Dict[str, Any]) -> Any:
     """
     Prediction function. Replace this with actual model inference logic.
-    
-    Example, if using a scikit-learn model:
-        processed_inputs = preprocess(inputs)
-        prediction = model.predict(processed_inputs)
     """
     try:
-        hours = float(inputs.get("Hours"))
-        input_array = np.array([[hours]])  # Create a 2D array
-        prediction = model.predict(input_array)
-        return prediction.tolist() # Convert NumPy array to list for JSON serialization
+        # Extract inputs
+        position = inputs.get("Position")
+        level = inputs.get("Level")
+
+        # Validate inputs
+        if position is None or level is None:
+            raise ValueError("Both 'Position' and 'Level' must be provided in the input.")
+
+        # Encode categorical input 'Position' if label_encoder exists
+        if label_encoder is not None:
+            position_encoded = label_encoder.transform([position])[0]
+        else:
+            raise ValueError("Label encoder not loaded.")
+        
+        # Convert Level to integer
+        try:
+            level = int(level)
+        except ValueError:
+            raise ValueError("Level must be an integer.")
+
+        # Prepare input for prediction
+        input_data = [[position_encoded, level]]
+
+        # Make prediction
+        prediction = model.predict(input_data)
+
+        return prediction.tolist()  # Convert numpy array to list for JSON serialization
+
     except Exception as e:
         logger.error(f"Error during model prediction: {e}")
-        raise ValueError("Invalid input format. Please provide 'Hours' as a number.")
+        raise ValueError(f"Error during prediction: {e}")
 
 # ---------------------------
 # Startup and Shutdown Events
@@ -81,29 +104,37 @@ def load_model():
     """
     Load the model during startup from a pickle file.
     """
-    global model
-    global model_metrics
-    model_path = "model.pkl"  # update with the model file path based on given JSON block
+    global model, label_encoder, mse, r2
+    model_path = "finalized_model.pickle"
+    dataset_path = "Position_Salaries.csv"
 
     try:
+        # Load the model
         with open(model_path, "rb") as f:
             model = pickle.load(f)
         logger.info(f"Model loaded successfully from {model_path}")
-        
-        # Optionally, load or set evaluation metrics if available.
-        # For example, Get attributes from the Code and Output Block, if not given, set as None.
-        # Since we don't have actual metrics from the training code, we'll set dummy values.
-        model_metrics = {
-            "mean_absolute_error": 5.0,
-            "mean_squared_error": 25.0,
-            "r2_score": 0.9
-        }
+
+        # Load the dataset to fit LabelEncoder
+        d = pd.read_csv(dataset_path)
+
+        # Initialize LabelEncoder and fit it
+        label_encoder = LabelEncoder()
+        d["Position"] = label_encoder.fit_transform(d["Position"])
+        logger.info("Label encoder fitted successfully.")
+
+        # Set evaluation metrics
+        mse = 462500000.0
+        r2 = 0.48611111111111116
 
 
     except Exception as e:
-        logger.error(f"Failed to load model from {model_path}: {e}")
+        logger.error(f"Failed to load model/data: {e}")
         model = None
-        model_metrics = {}
+        label_encoder = None
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Model or data failed to load. The service is unavailable."
+        )
 
 
 @app.on_event("shutdown")
@@ -132,10 +163,12 @@ async def health_check():
     """
     Health check endpoint. Returns a simple status message to confirm the API is running and the model is loaded.
     """
-    if model is not None:
-        return {"status": "ok", "model_loaded": True}
-    else:
-        return {"status": "ok", "model_loaded": False}
+    if model is None:
+          raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Model is not loaded. Please try again later."
+        )
+    return {"status": "ok"}
 
 
 @app.post("/predict", tags=["Prediction"])
@@ -148,7 +181,8 @@ async def predict(payload: PredictionRequest):
     Example Input: 
     {
         "inputs": {
-            "Hours": 9.25
+            "Position": "Business Analyst",
+            "Level": 1
         }
     }
     """
@@ -164,10 +198,11 @@ async def predict(payload: PredictionRequest):
     try:
         # Call the model_predict function which should contain your actual inference logic.
         predictions = model_predict(model, payload.inputs)
-    except ValueError as ve:
+    except ValueError as e:
+        logger.error(f"Error during model prediction: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(ve)
+            detail=str(e)
         )
     except Exception as e:
         logger.error(f"Error during model prediction: {e}")
@@ -185,10 +220,13 @@ async def get_metrics():
     Metrics endpoint.
     Returns model evaluation metrics (accuracy, classification matrix) only if available.
     """
-    global model_metrics
+    global mse, r2
 
-    if model_metrics:
-        return model_metrics
+    if mse is not None and r2 is not None:
+        return {
+            "MSE": mse,
+            "R2": r2
+        }
     else:
         return {"message": "No metrics available"}
 

@@ -6,7 +6,7 @@ variable "region" {
 variable "ami_id" {
   description = "AMI ID to launch the instance"
   type        = string
-  default     = "ami-04b4f1a9cf54c11d0"
+  default     = "ami-015d200881ec57abe"
 }
 
 variable "instance_type" {

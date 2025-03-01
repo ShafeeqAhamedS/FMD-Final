@@ -1,4 +1,5 @@
 import os
+import glob
 import google.generativeai as genai # type: ignore
 import logging
 from dotenv import load_dotenv # type: ignore
@@ -17,10 +18,8 @@ def main():
             generation_config=generation_config,
         )
 
-        ipynb_file = work_dir+"/generate_code/user_input/code.ipynb"
-        dataset_file = work_dir+"/generate_code/user_input/student_scores - student_scores.csv"
+        user_input_path = "generate_code/user_input/*"
 
-        user_input_path = work_dir+"/generate_code/user_input/*"
         backend_path = work_dir+"/backend"
 
         prepare_environment(user_input_path, backend_path)
@@ -45,6 +44,34 @@ def main():
         replace_frontend_code_path = work_dir+"/frontend/src/App.jsx"
         
         logger.debug("Starting main execution")
+
+        user_input_path = 'generate_code/user_input/'
+
+        # Find the .ipynb file
+        ipynb_files = glob.glob(os.path.join(user_input_path, "*.ipynb"))
+        if ipynb_files:
+            ipynb_file = ipynb_files[0]  # Assuming the first .ipynb file is chosen
+            print("Found .ipynb file:", ipynb_file)
+        else:
+            print("No .ipynb file found.")
+
+        # Find the dataset files (.csv, .json, .xl)
+        dataset_file = None
+        csv_files = glob.glob(os.path.join(user_input_path, "*.csv"))
+        json_files = glob.glob(os.path.join(user_input_path, "*.json"))
+        xl_files = glob.glob(os.path.join(user_input_path, "*.xl*"))
+
+        if csv_files:
+            dataset_file = csv_files[0]
+        elif json_files:
+            dataset_file = json_files[0]
+        elif xl_files:
+            dataset_file = xl_files[0]
+
+        if dataset_file:
+            print("Found dataset file:", dataset_file)
+        else:
+            print("No dataset file found.")
 
         extracted_data = extract_code_cells(ipynb_file)
         df = read_dataset_sample(dataset_file)
