@@ -9,7 +9,7 @@ load_dotenv()
 
 def main():
     try:
-        work_dir = os.getcwd()+"/workspace/file_generation"
+        work_dir = os.getcwd()+"/workspace/file_genration"
         genai.configure(api_key=os.getenv("API_KEY"))
 
         model = genai.GenerativeModel(
