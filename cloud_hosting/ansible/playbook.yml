@@ -40,7 +40,7 @@
       
     - name: Copy Model File
       copy:
-        src: "/home/shafee/FMD_Project/FMD/FMD-trails/generate_code/user_input/model.pkl"
+        src: "/var/lib/jenkins/workspace/FMD/workspace/file_genration/generate_code/user_input/model.pkl"
         dest: "{{ backend_directory }}"
         mode: '0755'
 
