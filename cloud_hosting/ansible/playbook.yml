@@ -34,7 +34,7 @@
 
     - name: Copy genrated backend file from local to EC2
       copy:
-        src: "/home/shafee/FMD_Project/FMD/FMD-trails/backend/main.py"
+        src: "/var/lib/jenkins/workspace/FMD/workspace/file_genration/backend/main.py"
         dest: "{{ backend_directory }}"
         mode: '0755'
       
@@ -77,7 +77,7 @@
 
     - name: Copy genrated frontend file from local to EC2
       copy:
-        src: "/home/shafee/FMD_Project/FMD/FMD-trails/frontend/src/App.jsx"
+        src: "/var/lib/jenkins/workspace/FMD/workspace/file_genration/frontend/src/App.jsx"
         dest: "{{ frontend_directory }}/src/"
         mode: '0755'
 
