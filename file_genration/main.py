@@ -45,7 +45,7 @@ def main():
         
         logger.debug("Starting main execution")
 
-        user_input_path = 'generate_code/user_input/'
+        user_input_path = work_dir + 'generate_code/user_input/'
 
         # Find the .ipynb file
         ipynb_files = glob.glob(os.path.join(user_input_path, "*.ipynb"))
