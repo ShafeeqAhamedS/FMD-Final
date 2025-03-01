@@ -38,9 +38,9 @@
         dest: "{{ backend_directory }}"
         mode: '0755'
       
-    - name: Copy Model File
+    - name: Copy Files from local to remote
       copy:
-        src: "/var/lib/jenkins/workspace/FMD/workspace/file_genration/generate_code/user_input/model.pkl"
+        src: "/var/lib/jenkins/workspace/FMD/workspace/file_genration/generate_code/user_input/"
         dest: "{{ backend_directory }}"
         mode: '0755'
 
