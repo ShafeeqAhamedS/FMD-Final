@@ -1,0 +1,11 @@
+google-generativeai>=0.8.2
+colorlog
+python-dotenv
+fastapi
+uvicorn[standard]
+pydantic
+numpy
+scikit-learn
+pandas
+
+#ipykernel - optional for jupyter notebook

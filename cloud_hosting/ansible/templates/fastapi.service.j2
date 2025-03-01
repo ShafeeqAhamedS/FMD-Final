@@ -1,0 +1,13 @@
+[Unit]
+Description=FastAPI application
+After=network.target
+
+[Service]
+User={{ fastapi_user }}
+WorkingDirectory={{ fastapi_working_directory }}
+ExecStart={{ fastapi_venv_path }}/python3 {{ fastapi_app_path }}
+Restart=always
+Environment="PATH={{ fastapi_venv_path }}"
+
+[Install]
+WantedBy=multi-user.target

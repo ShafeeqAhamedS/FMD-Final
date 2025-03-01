@@ -1,0 +1,16 @@
+# vars.yml
+
+# FastAPI application configuration
+fastapi_user: "ubuntu"
+fastapi_working_directory: "/home/ubuntu/FMD/backend"
+fastapi_venv_path: "/home/ubuntu/FMD/venv/bin"
+fastapi_app_path: "/home/ubuntu/FMD/backend/main.py"
+fastapi_service_name: "fastapi"
+
+# vars.yml
+app_git_repo: "https://github.com/ShafeeqAhamedS/FMD-user-final-app.git"
+app_directory: "/home/ubuntu/FMD/"
+frontend_directory: "/home/ubuntu/FMD/frontend"
+backend_directory: "/home/ubuntu/FMD/backend"
+model_directory: "/home/ubuntu/FMD/generate_code/user_input/"
+nginx_location: "/var/www/html/"

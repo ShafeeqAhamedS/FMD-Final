@@ -1,0 +1,99 @@
+---
+- name: Setup EC2 Application
+  hosts: my_ec2
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: Install necessary packages
+      apt:
+        name:
+          - python3-pip
+          - python3-dev
+          - python3-venv
+          - nginx
+          - nodejs
+          - npm
+        state: present
+        update_cache: yes
+      become: yes  # sudo for package installation
+
+    - name: Clone the Git repository
+      git:
+        repo: "{{ app_git_repo }}"
+        dest: "{{ app_directory }}"
+        version: main
+
+    - name: Set up Python virtual environment
+      command: python3 -m venv {{ app_directory }}/venv
+
+    - name: Install Python dependencies
+      pip:
+        requirements: "{{ app_directory }}/requirements.txt"
+        virtualenv: "{{ app_directory }}/venv"
+
+    - name: Copy genrated backend file from local to EC2
+      copy:
+        src: "/home/shafee/FMD_Project/FMD/FMD-trails/backend/main.py"
+        dest: "{{ backend_directory }}"
+        mode: '0755'
+      
+    - name: Copy Model File
+      copy:
+        src: "/home/shafee/FMD_Project/FMD/FMD-trails/generate_code/user_input/model.pkl"
+        dest: "{{ backend_directory }}"
+        mode: '0755'
+
+    - name: Create FastAPI service file
+      template:
+        src: "templates/fastapi.service.j2"
+        dest: "/etc/systemd/system/{{ fastapi_service_name }}.service"
+        mode: '0755'
+      become: yes  # sudo to write to /etc/systemd/system
+
+    - name: Enable and start the FastAPI service
+      systemd:
+        name: "{{ fastapi_service_name }}"
+        state: started
+        enabled: yes
+      become: yes  # sudo to start and enable the service
+
+    - name: Check NPM version
+      command: npm --version
+      register: npm_version
+
+    - name: Display npm version
+      debug:
+        var: npm_version.stdout
+
+    - name: Install packages at {{ frontend_directory }}
+      shell: cd {{ frontend_directory }} && npm install
+
+    - name: Create Frontend API Route File
+      template:
+        src: "templates/api_route.js"
+        dest: "{{ frontend_directory }}/src/"
+        mode: '0755'
+
+    - name: Copy genrated frontend file from local to EC2
+      copy:
+        src: "/home/shafee/FMD_Project/FMD/FMD-trails/frontend/src/App.jsx"
+        dest: "{{ frontend_directory }}/src/"
+        mode: '0755'
+
+    - name: Build frontend
+      shell: cd {{ frontend_directory }} && npm run build
+
+    - name: Copy built frontend to nginx location
+      copy:
+        src: "{{ frontend_directory }}/dist/"
+        dest: "{{ nginx_location }}"
+        mode: '0755'
+        remote_src: yes
+      become: yes  # sudo to copy to nginx directory
+
+    - name: Restart nginx service
+      systemd:
+        name: nginx
+        state: restarted
+      become: yes  # sudo to restart nginx service
