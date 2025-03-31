@@ -13,6 +13,7 @@ The script must:
 1. **Load the Dataset**: Load the dataset from a CSV file and validate its structure. Always Add './' while reading file
 2. **Preprocess Data**: Apply necessary preprocessing steps (e.g., encoding, scaling, feature engineering) based on the training pipeline.  
 3. **Load the Model**: Load a pre-trained model from a file (e.g., `.pkl`, `.joblib`).  Always Add './' while loading model
+**Note** : ONLY LOAD MODEL DO NOT ADD CODE TO TRAIN WITH DATA ADDED
 4. **Run Inference**: Select a sample row from the dataset and generate predictions using the loaded model.  
 5. **Evaluate the Model**: Compute evaluation metrics (e.g., accuracy, F1-score for classification; MSE, R² for regression).  
 6. **Error Handling**: Include robust exception handling for missing data, incorrect data types, or model loading issues.  
