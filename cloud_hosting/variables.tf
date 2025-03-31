@@ -6,7 +6,7 @@ variable "region" {
 variable "ami_id" {
   description = "AMI ID to launch the instance"
   type        = string
-  default     = "ami-015d200881ec57abe"
+  default     = "ami-0e5be49ead9d44364"
 }
 
 variable "instance_type" {
@@ -17,13 +17,13 @@ variable "instance_type" {
 variable "ssh_pem_file_name" {
   description = "File name of the SSH private key"
   type        = string
-  default    = "shafeeq-thinkpad"
+  default    = "shafeeq_thinkpad"
 }
 
 variable "security_group_id" {
   description = "Security group ID"
   type        = string
-  default     = "sg-0b71b5574fab565c6"
+  default     = "sg-0052085119f0b481c"
 }
 
 variable "backend_port" {
